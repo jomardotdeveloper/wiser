@@ -18,9 +18,11 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
+        'fullname',
+        'username',
         'password',
+        'is_admin',
+        'remaining_time',
     ];
 
     /**
@@ -42,4 +44,31 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    public function getMacAddressAttribute()
+    {
+        $output = exec("getmac");
+        $parts = preg_split('/\s+/', $output);
+        return $parts[0];
+    }
+
+    public function getIpAddressAttribute()
+    {
+        return request()->ip();
+    }
+
+    public function getRemainingTimeFormattedAttribute()
+    {
+        if ($this->remaining_time <= 0) {
+            return '00:00:00';
+        }
+
+        $remainingTimeInSeconds = $this->remaining_time;
+
+        $hours = floor($remainingTimeInSeconds / 3600);
+        $minutes = floor(($remainingTimeInSeconds / 60) % 60);
+        $seconds = $remainingTimeInSeconds % 60;
+
+        return sprintf('%02d:%02d:%02d', $hours, $minutes, $seconds);
+    }
 }
